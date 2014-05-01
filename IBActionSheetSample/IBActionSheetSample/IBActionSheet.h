@@ -136,7 +136,7 @@ typedef NS_ENUM(NSInteger, IBActionSheetButtonCornerType) {
 
 - (void)resizeForPortraitOrientation;
 - (void)resizeForLandscapeOrientation;
-- (id)initWithTitle:(NSString *)title font:(UIFont *)font;
+- (id)initWithTitle:(NSString *)title;
 
 
 

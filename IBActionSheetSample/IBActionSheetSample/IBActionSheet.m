@@ -185,11 +185,7 @@
     float height;
     float width;
     
-    if (UIInterfaceOrientationIsPortrait([[UIApplication sharedApplication] statusBarOrientation])) {
-        width = CGRectGetWidth(self.superview.bounds);
-    } else {
-        width = CGRectGetHeight(self.superview.bounds);
-    }
+    width = CGRectGetWidth(self.superview.bounds);
     
     
     // slight adjustment to take into account non-retina devices
@@ -495,10 +491,6 @@
     x = CGRectGetWidth(theView.frame) / 2.0;
     self.transparentView.frame = CGRectMake(self.transparentView.center.x, self.transparentView.center.y, CGRectGetWidth(theScreenRect), CGRectGetHeight(theScreenRect));
     
-    if (UIInterfaceOrientationIsPortrait([[UIApplication sharedApplication] statusBarOrientation])) {
-        
-    } else {
-    }
     [self rotateToCurrentOrientation];
     [self rotateToCurrentOrientation];
     
@@ -562,8 +554,8 @@
         
     } else {
         
-        width = CGRectGetHeight(self.superview.bounds);
-        height = CGRectGetWidth(self.superview.bounds);
+        width = CGRectGetWidth(self.superview.bounds);
+        height = CGRectGetHeight(self.superview.bounds);
         
         
         for (IBActionSheetButton * button in self.buttons) {
@@ -699,13 +691,8 @@
 
 - (id)init {
     
-    float width;
+    float width = CGRectGetWidth(self.superview.bounds);
     
-    if (UIInterfaceOrientationIsPortrait([[UIApplication sharedApplication] statusBarOrientation])) {
-        width = CGRectGetWidth(self.superview.bounds);
-    } else {
-        width = CGRectGetHeight(self.superview.bounds);
-    }
     self = [self initWithFrame:CGRectMake(0, 0, width - 16, 44)];
     
     self.backgroundColor = [UIColor whiteColor];
@@ -775,7 +762,7 @@
 }
 
 - (void)resizeForLandscapeOrientation {
-    self.frame = CGRectMake(0, 0, CGRectGetHeight(self.superview.bounds) - 16, CGRectGetHeight(self.frame));
+    self.frame = CGRectMake(0, 0, CGRectGetWidth(self.superview.bounds) - 16, CGRectGetHeight(self.frame));
     
     switch (self.cornerType) {
         case IBActionSheetButtonCornerTypeNoCornersRounded:
@@ -829,7 +816,7 @@
         width = CGRectGetWidth([UIScreen mainScreen].bounds);
         labelBuffer = 44;
     } else {
-        width = CGRectGetHeight([UIScreen mainScreen].bounds);
+        width = CGRectGetWidth([UIScreen mainScreen].bounds);
         labelBuffer = 24;
     }
     
@@ -868,8 +855,8 @@
 
 - (void)resizeForLandscapeOrientation {
     
-    self.frame = CGRectMake(0, 0, CGRectGetHeight(self.superview.bounds) - 16, CGRectGetHeight(self.frame));
-    self.titleLabel.frame = CGRectMake(0, 0, CGRectGetHeight(self.superview.bounds) - 44, 44);
+    self.frame = CGRectMake(0, 0, CGRectGetWidth(self.superview.bounds) - 16, CGRectGetHeight(self.frame));
+    self.titleLabel.frame = CGRectMake(0, 0, CGRectGetWidth(self.superview.bounds) - 44, 44);
     [self setMaskTo:self byRoundingCorners:UIRectCornerTopLeft | UIRectCornerTopRight];
 }
 

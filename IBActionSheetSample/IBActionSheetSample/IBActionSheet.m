@@ -186,9 +186,9 @@
     float width;
     
     if (UIInterfaceOrientationIsPortrait([[UIApplication sharedApplication] statusBarOrientation])) {
-        width = CGRectGetWidth([UIScreen mainScreen].bounds);
+        width = CGRectGetWidth(self.superview.bounds);
     } else {
-        width = CGRectGetHeight([UIScreen mainScreen].bounds);
+        width = CGRectGetHeight(self.superview.bounds);
     }
     
     
@@ -313,7 +313,7 @@
                              [button setTitleColor:button.highlightTextColor forState:UIControlStateAll];
                              
                          } else {
-                         
+                             
                              UIColor *tempColor = button.titleLabel.textColor;
                              [button setTitleColor:button.backgroundColor forState:UIControlStateAll];
                              button.backgroundColor = tempColor;
@@ -347,11 +347,14 @@
 
 - (NSInteger)addButtonWithTitle:(NSString *)title {
     
-    int index = self.buttons.count;
+    int index;
     
-    if (self.hasCancelButton) {
-        index -= 1;
-    }
+    if (self.buttons.count > 1)
+        index = self.buttons.count - 1;
+    else if (self.buttons.count == 1 && !self.hasCancelButton)
+        index = 1;
+    else
+        index = 0;
     
     IBActionSheetButton *button;
     
@@ -483,96 +486,58 @@
     [theView addSubview:self];
     [theView insertSubview:self.transparentView belowSubview:self];
     
-    CGRect theScreenRect = [UIScreen mainScreen].bounds;
+    CGRect theScreenRect = theView.bounds;
     
     float height;
     float x;
     
+    height = CGRectGetHeight(theScreenRect);
+    x = CGRectGetWidth(theView.frame) / 2.0;
+    self.transparentView.frame = CGRectMake(self.transparentView.center.x, self.transparentView.center.y, CGRectGetWidth(theScreenRect), CGRectGetHeight(theScreenRect));
+    
     if (UIInterfaceOrientationIsPortrait([[UIApplication sharedApplication] statusBarOrientation])) {
-        height = CGRectGetHeight(theScreenRect);
-        x = CGRectGetWidth(theView.frame) / 2.0;
-        self.transparentView.frame = CGRectMake(self.transparentView.center.x, self.transparentView.center.y, CGRectGetWidth(theScreenRect), CGRectGetHeight(theScreenRect));
+        
     } else {
-        height = CGRectGetWidth(theScreenRect);
-        x = CGRectGetHeight(theView.frame) / 2.0;
-        self.transparentView.frame = CGRectMake(self.transparentView.center.x, self.transparentView.center.y, CGRectGetHeight(theScreenRect), CGRectGetWidth(theScreenRect));
     }
+    [self rotateToCurrentOrientation];
+    [self rotateToCurrentOrientation];
     
     self.center = CGPointMake(x, height + CGRectGetHeight(self.frame) / 2.0);
     self.transparentView.center = CGPointMake(x, height / 2.0);
     
-    
-    if (SYSTEM_VERSION_LESS_THAN(@"7.0")) {
-        
-        
-        [UIView animateWithDuration:0.2f
-                              delay:0.0f
-                            options:UIViewAnimationOptionCurveEaseOut
-                         animations:^() {
-                             self.transparentView.alpha = 0.4f;
+    [UIView animateWithDuration:0.2f
+                          delay:0.0f
+                        options:UIViewAnimationOptionCurveEaseOut
+                     animations:^() {
+                         self.transparentView.alpha = 0.4f;
+                         if (SYSTEM_VERSION_LESS_THAN(@"7.0")) {
                              self.center = CGPointMake(x, (height - 20) - CGRectGetHeight(self.frame) / 2.0);
-                             
-                         } completion:^(BOOL finished) {
-                             self.visible = YES;
-                         }];
-    } else {
-        
-        [UIView animateWithDuration:0.5f
-                              delay:0
-             usingSpringWithDamping:0.6f
-              initialSpringVelocity:0
-                            options:UIViewAnimationOptionCurveLinear
-                         animations:^{
-                             self.transparentView.alpha = 0.4f;
+                         } else {
                              self.center = CGPointMake(x, height - CGRectGetHeight(self.frame) / 2.0);
-                             
-                         } completion:^(BOOL finished) {
-                             self.visible = YES;
-                         }];
-    }
+                         }
+                         
+                     } completion:^(BOOL finished) {
+                         self.visible = YES;
+                     }];
 }
 
 - (void)removeFromView {
     
     if (self.shouldCancelOnTouch) {
         
-        if (SYSTEM_VERSION_LESS_THAN(@"7.0")) {
-            
-            
-            [UIView animateWithDuration:0.2f
-                                  delay:0.0f
-                                options:UIViewAnimationOptionCurveEaseOut
-                             animations:^() {
-                                 self.transparentView.alpha = 0.0f;
-                                 self.center = CGPointMake(CGRectGetWidth(self.frame) / 2.0, CGRectGetHeight([UIScreen mainScreen].bounds) + CGRectGetHeight(self.frame) / 2.0);
-                                 
-                             } completion:^(BOOL finished) {
-                                 [self.transparentView removeFromSuperview];
-                                 [self removeFromSuperview];
-                                 self.visible = NO;
-                             }];
-        } else {
-            
-            [UIView animateWithDuration:0.5f
-                                  delay:0
-                 usingSpringWithDamping:0.6f
-                  initialSpringVelocity:0
-                                options:UIViewAnimationOptionCurveLinear
-                             animations:^{
-                                 self.transparentView.alpha = 0.0f;
-                                 self.center = CGPointMake(CGRectGetWidth(self.frame) / 2.0, CGRectGetHeight([UIScreen mainScreen].bounds) + CGRectGetHeight(self.frame) / 2.0);
-                                 
-                             } completion:^(BOOL finished) {
-                                 [self.transparentView removeFromSuperview];
-                                 [self removeFromSuperview];
-                                 self.visible = NO;
-                             }];
-        }
-        
+        [UIView animateWithDuration:0.3f
+                              delay:0.0f
+                            options:UIViewAnimationOptionCurveEaseOut
+                         animations:^() {
+                             self.transparentView.alpha = 0.0f;
+                             self.center = CGPointMake(CGRectGetWidth(self.frame) / 2.0, CGRectGetHeight(self.superview.bounds) + CGRectGetHeight(self.frame) / 2.0);
+                         } completion:^(BOOL finished) {
+                             [self.transparentView removeFromSuperview];
+                             [self removeFromSuperview];
+                             self.visible = NO;
+                         }];
     }
-    
 }
-
 
 - (void)rotateToCurrentOrientation {
     
@@ -581,25 +546,25 @@
     
     if (UIInterfaceOrientationIsPortrait([[UIApplication sharedApplication] statusBarOrientation])) {
         
-        width = CGRectGetWidth([UIScreen mainScreen].bounds);
-        height = CGRectGetHeight([UIScreen mainScreen].bounds);
+        width = CGRectGetWidth(self.superview.bounds);
+        height = CGRectGetHeight(super.superview.bounds);
         
         
-            for (IBActionSheetButton * button in self.buttons) {
-                [button resizeForPortraitOrientation];
-            }
+        for (IBActionSheetButton * button in self.buttons) {
+            [button resizeForPortraitOrientation];
+        }
         
-            [self.titleView resizeForPortraitOrientation];
-            [self setUpTheActionSheet];
+        [self.titleView resizeForPortraitOrientation];
+        [self setUpTheActionSheet];
         
         
         
         
     } else {
         
-        width = CGRectGetHeight([UIScreen mainScreen].bounds);
-        height = CGRectGetWidth([UIScreen mainScreen].bounds);
-
+        width = CGRectGetHeight(self.superview.bounds);
+        height = CGRectGetWidth(self.superview.bounds);
+        
         
         for (IBActionSheetButton * button in self.buttons) {
             [button resizeForLandscapeOrientation];
@@ -621,7 +586,7 @@
 - (void)setButtonTextColor:(UIColor *)color {
     
     for (IBActionSheetButton *button in self.buttons) {
-            [button setTitleColor:color forState:UIControlStateAll];
+        [button setTitleColor:color forState:UIControlStateAll];
         button.originalTextColor = color;
     }
     
@@ -634,7 +599,7 @@
         button.backgroundColor = color;
         button.originalBackgroundColor = color;
     }
-
+    
     [self setTitleBackgroundColor:color];
 }
 
@@ -689,7 +654,7 @@
 #pragma mark IBActionSheet Other Properties methods
 
 - (void)setTitle:(NSString *)title {
-    self.titleView = [[IBActionSheetTitleView alloc] initWithTitle:title font:nil];
+    self.titleView = [[IBActionSheetTitleView alloc] initWithTitle:title];
     [self setUpTheActionSheet];
 }
 
@@ -719,12 +684,7 @@
 
 - (void)setTitleFont:(UIFont *)font {
     if (self.titleView) {
-        UIColor *backgroundColor = self.titleView.backgroundColor;
-        UIColor *textColor = self.titleView.titleLabel.textColor;
-        self.titleView = [[IBActionSheetTitleView alloc] initWithTitle:self.titleView.titleLabel.text font:font];
-        self.titleView.backgroundColor = backgroundColor;
-        self.titleView.titleLabel.textColor = textColor;
-        [self setUpTheActionSheet];
+        self.titleView.titleLabel.font = font;
     }
 }
 
@@ -742,9 +702,9 @@
     float width;
     
     if (UIInterfaceOrientationIsPortrait([[UIApplication sharedApplication] statusBarOrientation])) {
-        width = CGRectGetWidth([UIScreen mainScreen].bounds);
+        width = CGRectGetWidth(self.superview.bounds);
     } else {
-        width = CGRectGetHeight([UIScreen mainScreen].bounds);
+        width = CGRectGetHeight(self.superview.bounds);
     }
     self = [self initWithFrame:CGRectMake(0, 0, width - 16, 44)];
     
@@ -789,7 +749,7 @@
 
 - (void)resizeForPortraitOrientation {
     
-    self.frame = CGRectMake(0, 0, CGRectGetWidth([UIScreen mainScreen].bounds) - 16, CGRectGetHeight(self.frame));
+    self.frame = CGRectMake(0, 0, CGRectGetWidth(self.superview.bounds) - 16, CGRectGetHeight(self.frame));
     
     switch (self.cornerType) {
         case IBActionSheetButtonCornerTypeNoCornersRounded:
@@ -815,7 +775,7 @@
 }
 
 - (void)resizeForLandscapeOrientation {
-    self.frame = CGRectMake(0, 0, CGRectGetHeight([UIScreen mainScreen].bounds) - 16, CGRectGetHeight(self.frame));
+    self.frame = CGRectMake(0, 0, CGRectGetHeight(self.superview.bounds) - 16, CGRectGetHeight(self.frame));
     
     switch (self.cornerType) {
         case IBActionSheetButtonCornerTypeNoCornersRounded:
@@ -838,7 +798,7 @@
         default:
             break;
     }
-
+    
 }
 
 - (void)setMaskTo:(UIView*)view byRoundingCorners:(UIRectCorner)corners
@@ -858,7 +818,7 @@
 
 @implementation IBActionSheetTitleView
 
-- (id)initWithTitle:(NSString *)title font:(UIFont *)font {
+- (id)initWithTitle:(NSString *)title {
     
     self = [self init];
     
@@ -876,21 +836,15 @@
     self.alpha = .95f;
     self.backgroundColor = [UIColor whiteColor];
     self.titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, width - labelBuffer, 44)];
+    self.titleLabel.font = [UIFont systemFontOfSize:13];
     self.titleLabel.textColor = [UIColor colorWithWhite:0.564 alpha:1.000];
     self.titleLabel.textAlignment = NSTextAlignmentCenter;
     self.titleLabel.numberOfLines = 0;
     self.titleLabel.text = title;
     self.titleLabel.backgroundColor = [UIColor clearColor];
-    
-    if (font) {
-        self.titleLabel.font = font;
-    } else {
-        self.titleLabel.font = [UIFont systemFontOfSize:13];
-    }
-    
     [self.titleLabel sizeToFit];
     
-   
+    
     
     if ((CGRectGetHeight(self.titleLabel.frame) + 30) < 44) {
         self.frame = CGRectMake(0, 0, width - 16, 44);
@@ -907,15 +861,15 @@
 
 - (void)resizeForPortraitOrientation {
     
-    self.frame = CGRectMake(0, 0, CGRectGetWidth([UIScreen mainScreen].bounds) - 16, CGRectGetHeight(self.frame));
-    self.titleLabel.frame = CGRectMake(0, 0, CGRectGetWidth([UIScreen mainScreen].bounds) - 24, 44);
+    self.frame = CGRectMake(0, 0, CGRectGetWidth(self.superview.bounds) - 16, CGRectGetHeight(self.frame));
+    self.titleLabel.frame = CGRectMake(0, 0, CGRectGetWidth(self.superview.bounds) - 24, 44);
     [self setMaskTo:self byRoundingCorners:UIRectCornerTopLeft | UIRectCornerTopRight];
 }
 
 - (void)resizeForLandscapeOrientation {
     
-    self.frame = CGRectMake(0, 0, CGRectGetHeight([UIScreen mainScreen].bounds) - 16, CGRectGetHeight(self.frame));
-    self.titleLabel.frame = CGRectMake(0, 0, CGRectGetHeight([UIScreen mainScreen].bounds) - 44, 44);
+    self.frame = CGRectMake(0, 0, CGRectGetHeight(self.superview.bounds) - 16, CGRectGetHeight(self.frame));
+    self.titleLabel.frame = CGRectMake(0, 0, CGRectGetHeight(self.superview.bounds) - 44, 44);
     [self setMaskTo:self byRoundingCorners:UIRectCornerTopLeft | UIRectCornerTopRight];
 }
 
